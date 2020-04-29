@@ -4,17 +4,21 @@ class GameService:
         return 0, 0.1
 
     @classmethod
-    def start_game(cls):
-        cls._check_if_game_exists()
+    def start_game(cls, chat_id):
+        cls._check_if_game_exists(chat_id)
 
     @classmethod
-    def set_word_type(cls):
-        cls._check_if_game_exists()
+    def set_word_type(cls, chat_id, word_type):
+        cls._check_if_game_exists(chat_id)
 
     @classmethod
-    def set_word_length(cls):
-        cls._check_if_game_exists()
+    def set_word_length(cls, chat_id, length):
+        cls._check_if_game_exists(chat_id)
 
     @classmethod
-    def _check_if_game_exists(cls):
+    def play_round(cls, chat_id, text):
+        cls._check_if_game_exists(chat_id)
+
+    @classmethod
+    def _check_if_game_exists(cls, chat_id):
         pass
