@@ -1,8 +1,8 @@
 import telebot
 
 from src.messages import HELLO_MESSAGE, RULES_MESSAGE
+from src.settings import BOT_TOKEN
 
-BOT_TOKEN = ''
 bot = telebot.TeleBot(BOT_TOKEN)
 
 
