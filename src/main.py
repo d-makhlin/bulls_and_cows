@@ -1,8 +1,9 @@
 import telebot
 
+from pymongo import MongoClient
 from src.game_service import GameService
 from static.messages import HELLO_MESSAGE, RULES_MESSAGE, GAME_TYPE_MESSAGE, GAME_LENGTH_MESSAGE
-from src.settings import BOT_TOKEN
+from static.settings import BOT_TOKEN, MONGODB_NAME, MONGODB_LINK
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
@@ -24,7 +25,7 @@ def send_text(message):
 
     if text == 'статистика':
         play_keyboard = telebot.types.ReplyKeyboardMarkup('Начать игру')
-        played, avg_time = GameService.get_statistics(message.chat.id)
+        played, avg_time = GameService.get_statistics(chat_id)
         bot.send_message(chat_id, f'Сыграно {played} игр, среднее время: {avg_time} секунд', reply_markup=play_keyboard)
 
     if text == 'начать игру':
@@ -45,4 +46,5 @@ def send_text(message):
     bot.send_message(chat_id, response)
 
 
+# mng = MongoClient(MONGODB_LINK)[MONGODB_NAME]
 bot.polling()
