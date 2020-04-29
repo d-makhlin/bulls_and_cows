@@ -1,4 +1,6 @@
-from src.datamodels import GameStatisticsResponse, GameActionResponse, Game
+from typing import Optional
+
+from src.datamodels import GameStatisticsResponse, GameActionResponse, Game, GameRoundActionResponse
 from static.constants import GameType, GameState
 from datetime import datetime
 
@@ -11,37 +13,60 @@ class GameService:
 
     @classmethod
     def start_game(cls, chat_id) -> GameActionResponse:
-        if not cls._check_if_game_exists(chat_id):
+        response = GameActionResponse(success=True)
+        if not cls._check_if_game_exists(chat_id)[0]:
             Game(chat_id=chat_id, state=GameState.INITIALIZATION, rounds=0, start_date=datetime.now())
-        # todo: put Game to DB
-        response = GameActionResponse()
+            # todo: put Game to DB
+        else:
+            response.success = False
+            response.message = 'Существует незаконченная игра!'
         return response
 
     @classmethod
     def set_word_type(cls, chat_id, word_type) -> GameActionResponse:
-        cls._check_if_game_exists(chat_id)
-        response = GameActionResponse()
+        response = GameActionResponse(success=True)
+        exists, game = cls._check_if_game_exists(chat_id)
+        if not exists:
+            response.success = False
+            response.message = 'Не существует текущей игры!'
+        else:
+            # todo: update Game in DB
+            pass
         return response
 
     @classmethod
     def set_word_length(cls, chat_id, length) -> GameActionResponse:
-        cls._check_if_game_exists(chat_id)
-        response = GameActionResponse()
+        response = GameActionResponse(success=True)
+        exists, game = cls._check_if_game_exists(chat_id)
+        if not exists:
+            response.success = False
+            response.message = 'Не существует текущей игры!'
+        else:
+            # todo: update Game in DB
+            pass
         return response
 
     @classmethod
-    def play_round(cls, chat_id, text) -> GameActionResponse:
-        cls._check_if_game_exists(chat_id)
-        response = GameActionResponse()
+    def play_round(cls, chat_id, text) -> GameRoundActionResponse:
+        response = GameRoundActionResponse(success=True)
+        exists, game = cls._check_if_game_exists(chat_id)
+        if not exists:
+            response.success = False
+            response.message = 'Не существует текущей игры!'
+        else:
+            # todo: update Game in DB
+            # cls._check_if_question_is_ok(text, )
+            # cls._get_bulls_and_cows()
+            pass
         return response
 
     @classmethod
-    def _check_if_game_exists(cls, chat_id) -> bool:
-        pass
+    def _check_if_game_exists(cls, chat_id) -> (bool, Optional[Game]):
+        return False, None
 
     @classmethod
     def _check_if_question_is_ok(cls, question: str, word_type: GameType, length: int) -> GameActionResponse:
-        result = GameActionResponse(success=False, message='')
+        result = GameActionResponse(success=False)
         set_question = set(question)
 
         if len(question) != length:

@@ -21,7 +21,13 @@ class GameBaseResponse(BaseModel):
 
 
 class GameActionResponse(GameBaseResponse):
-    message: str
+    message: Optional[str] = None
+
+
+class GameRoundActionResponse(GameBaseResponse):
+    message: Optional[str] = None
+    bulls: Optional[int] = None
+    cows: Optional[int] = None
 
 
 class GameStatisticsResponse(GameBaseResponse):
