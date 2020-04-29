@@ -1,5 +1,6 @@
-from src.datamodels import GameStatisticsResponse, GameActionResponse
-from static.constants import GameType
+from src.datamodels import GameStatisticsResponse, GameActionResponse, Game
+from static.constants import GameType, GameState
+from datetime import datetime
 
 
 class GameService:
@@ -10,7 +11,9 @@ class GameService:
 
     @classmethod
     def start_game(cls, chat_id) -> GameActionResponse:
-        cls._check_if_game_exists(chat_id)
+        if not cls._check_if_game_exists(chat_id):
+            Game(chat_id=chat_id, state=GameState.INITIALIZATION, rounds=0, start_date=datetime.now())
+        # todo: put Game to DB
         response = GameActionResponse()
         return response
 
