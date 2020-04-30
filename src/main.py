@@ -1,9 +1,12 @@
+import logging
+
 import telebot
 
 from pymongo import MongoClient
 from src.game_service import GameService
-from static.messages import HELLO_MESSAGE, RULES_MESSAGE, GAME_TYPE_MESSAGE, GAME_LENGTH_MESSAGE
-from static.settings import BOT_TOKEN, MONGODB_NAME, MONGODB_LINK
+from static.constants import GameType, GameState
+from static.messages import HELLO_MESSAGE, RULES_MESSAGE, GAME_TYPE_MESSAGE, GAME_LENGTH_MESSAGE, GAME_START_MESSAGE
+from static.settings import BOT_TOKEN, MONGODB_NAME
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
@@ -40,11 +43,14 @@ def send_text(message):
 
     if text in ['4', '5', '6']:
         GameService.set_word_length(chat_id, text)
-        bot.send_message(chat_id, GAME_LENGTH_MESSAGE)
+        game = GameService.check_if_game_exists(chat_id, [GameState.IN_PROGRESS])[1]
+        word_type = 'слово' if game.word_type == GameType.WORDS else 'число'
+        bot.send_message(chat_id, GAME_START_MESSAGE.format(word_type, game.length))
 
     response = GameService.play_round(chat_id, text)
     bot.send_message(chat_id, response)
 
 
-# mng = MongoClient(MONGODB_LINK)[MONGODB_NAME]
+db = MongoClient()[MONGODB_NAME]
+logging.info('Connected to db')
 bot.polling()
