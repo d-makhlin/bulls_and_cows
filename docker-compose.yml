@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+
+  mongo:
+    image: mongo:latest
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+
+  bot:
+    build: .
+    restart: unless-stopped
+    links:
+      - mongo
