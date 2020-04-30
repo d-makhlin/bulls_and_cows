@@ -11,6 +11,7 @@ class Game(BaseModel):
     state: GameState
     word_type: Optional[GameType] = None
     answer: Optional[str] = None
+    length: Optional[int]
     rounds: int
     start_date: datetime
     end_date: Optional[datetime] = None
@@ -22,6 +23,10 @@ class GameBaseResponse(BaseModel):
 
 class GameActionResponse(GameBaseResponse):
     message: Optional[str] = None
+
+    def update(self, success: bool, message: str):
+        self.success = success
+        self.message = message
 
 
 class GameRoundActionResponse(GameBaseResponse):
