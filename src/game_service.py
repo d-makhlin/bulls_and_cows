@@ -84,9 +84,8 @@ class GameService:
 
     @classmethod
     def check_if_game_exists(cls, chat_id, states: List[GameState]) -> (bool, Optional[Game]):
-        state = states[0]  # todo: make loop
         from src.main import db
-        games = db.find({'chat_id': chat_id, 'state': state})
+        games = db.bios.find({'chat_id': chat_id, 'state': {'$in': states}})
         if games:
             return True, Game.parse_obj(games[0])
         return False, None
