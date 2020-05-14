@@ -8,7 +8,7 @@ from datetime import datetime
 class GameService:
     @classmethod
     def get_statistics(cls, chat_id) -> GameStatisticsResponse:
-        from src.main import db
+        from main import db
         games = db.find({'chat_id': chat_id, 'state': GameState.FINISHED})
         rounds = 0
         time = 0.0
@@ -26,7 +26,7 @@ class GameService:
         response = GameActionResponse(success=True)
         if not cls.check_if_game_exists(chat_id, [GameState.IN_PROGRESS, GameState.INITIALIZATION])[0]:
             game = Game(chat_id=chat_id, state=GameState.INITIALIZATION, rounds=0, start_date=datetime.now())
-            from src.main import db
+            from main import db
             db.insert_one(game.dict())
         else:
             response.update(False, 'Существует незаконченная игра!')
@@ -40,7 +40,7 @@ class GameService:
             response.success = False
             response.message = 'Не существует текущей игры!'
         else:
-            from src.main import db
+            from main import db
             db.update_one({'chat_id': chat_id, 'state': GameState.INITIALIZATION}, {'word_type': word_type})
         return response
 
@@ -52,7 +52,7 @@ class GameService:
             response.update(False, 'Не существует текущей игры!')
         else:
             answer = cls._generate_word(game.word_type, game.length)
-            from src.main import db
+            from main import db
             db.update_one(
                 {'chat_id': chat_id, 'state': GameState.INITIALIZATION},
                 {'length': length, 'state': GameState.IN_PROGRESS, 'answer': answer},
@@ -71,20 +71,20 @@ class GameService:
             response.bulls, response.cows = cls._get_bulls_and_cows(text, game.answer)
             if response.bulls == game.length:
                 response.message = f'Поздравляю, ты выиграл!, я загадывал {game.answer}'
-                from src.main import db
+                from main import db
                 db.update_one(
                     {'chat_id': chat_id, 'state': GameState.IN_PROGRESS},
                     {'rounds': game.rounds + 1, 'end_time': datetime.now(), 'state': GameState.FINISHED},
                 )
             else:
                 response.message = f'{response.bulls} быков, {response.cows} коров'
-                from src.main import db
+                from main import db
                 db.update_one({'chat_id': chat_id, 'state': GameState.IN_PROGRESS}, {'rounds': game.rounds + 1})
         return response
 
     @classmethod
     def check_if_game_exists(cls, chat_id, states: List[GameState]) -> (bool, Optional[Game]):
-        from src.main import db
+        from main import db
         games = db.bios.find({'chat_id': chat_id, 'state': {'$in': states}})
         if games:
             return True, Game.parse_obj(games[0])
