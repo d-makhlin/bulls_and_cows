@@ -24,16 +24,17 @@ class GameService:
 
     @classmethod
     def get_statistics(cls, chat_id) -> GameStatisticsResponse:
-        games = GameService.db.find({'chat_id': chat_id, 'state': str(GameState.FINISHED.value)})
+        games_query = GameService.db.find({'chat_id': str(chat_id), 'state': str(GameState.FINISHED.value)})
         rounds = 0
         time = 0.0
+        games = [Game.parse_obj(g) for g in games_query]
         if games:
             rounds = len(games)
             for game in games:
                 diff = game.end_date - game.start_date
                 time += diff.seconds
             time = time / rounds
-        response = GameStatisticsResponse(success=True, game_rounds=rounds, avg_time=time)
+        response = GameStatisticsResponse(success=True, games_count=rounds, avg_time=time)
         return response
 
     @classmethod
@@ -43,18 +44,30 @@ class GameService:
             game = Game(chat_id=chat_id, state=str(GameState.INITIALIZATION.value), rounds=0, start_date=datetime.now())
             GameService.db.insert_one(game.dict())
         else:
-            response.update(False, 'Существует незаконченная игра!')
+            GameService.db.update_one(
+                {'chat_id': str(chat_id), 'state': str(GameState.IN_PROGRESS.value)},
+                {'$set': {'state': str(GameState.IN_PROGRESS.value), 'end_date': datetime.now()}},
+            )
+            game = Game(chat_id=chat_id, state=str(GameState.INITIALIZATION.value), rounds=0, start_date=datetime.now())
+            GameService.db.insert_one(game.dict())
         return response
 
     @classmethod
-    def set_word_type(cls, chat_id, word_type) -> GameActionResponse:
+    def set_word_type(cls, chat_id, text) -> GameActionResponse:
         response = GameActionResponse(success=True)
+        if text == 'числа':
+            word_type = GameType.NUMBERS
+        else:
+            word_type = GameType.WORDS
         exists, game = cls.check_if_game_exists(chat_id, [GameState.INITIALIZATION])
         if not exists:
             response.success = False
             response.message = 'Не существует текущей игры!'
         else:
-            GameService.db.update_one({'chat_id': chat_id, 'state': str(GameState.INITIALIZATION.value)}, {'$set': {'word_type': str(word_type)}})
+            GameService.db.update_one(
+                {'chat_id': str(chat_id), 'state': str(GameState.INITIALIZATION.value)},
+                {'$set': {'word_type': str(word_type.value)}},
+            )
         return response
 
     @classmethod
@@ -64,9 +77,9 @@ class GameService:
         if not exists:
             response.update(False, 'Не существует текущей игры!')
         else:
-            answer = cls._generate_word(game.word_type, game.length)
+            answer = cls._generate_word(game.word_type, length)
             GameService.db.update_one(
-                {'chat_id': chat_id, 'state': str(GameState.INITIALIZATION.value)},
+                {'chat_id': str(chat_id), 'state': str(GameState.INITIALIZATION.value)},
                 {'$set': {'length': length, 'state': str(GameState.IN_PROGRESS.value), 'answer': answer}},
             )
         return response
@@ -82,14 +95,23 @@ class GameService:
             cls._check_if_question_is_ok(text, game.word_type, game.length)
             response.bulls, response.cows = cls._get_bulls_and_cows(text, game.answer)
             if response.bulls == game.length:
-                response.message = f'Поздравляю, ты выиграл!, я загадывал {game.answer}'
+                response.message = f'Поздравляю, ты выиграл! Я загадывал {game.answer}'
                 GameService.db.update_one(
-                    {'chat_id': chat_id, 'state': str(GameState.IN_PROGRESS.value)},
-                    {'$set': {'rounds': game.rounds + 1, 'end_time': datetime.now(), 'state': str(GameState.FINISHED.value)}},
+                    {'chat_id': str(chat_id), 'state': str(GameState.IN_PROGRESS.value)},
+                    {
+                        '$set': {
+                            'rounds': game.rounds + 1,
+                            'end_date': datetime.now(),
+                            'state': str(GameState.FINISHED.value),
+                        }
+                    },
                 )
             else:
                 response.message = f'{response.bulls} быков, {response.cows} коров'
-                GameService.db.update_one({'chat_id': chat_id, 'state': str(GameState.IN_PROGRESS.value)}, {'$set': {'rounds': game.rounds + 1}})
+                GameService.db.update_one(
+                    {'chat_id': str(chat_id), 'state': str(GameState.IN_PROGRESS.value)},
+                    {'$set': {'rounds': game.rounds + 1}},
+                )
         return response
 
     @classmethod
@@ -103,7 +125,8 @@ class GameService:
     @classmethod
     def _generate_word(cls, word_type: GameType, length: int) -> str:
         answer = ''
-        if word_type == GameType.NUMBERS:
+        length = int(length)
+        if word_type == GameType.NUMBERS.value:
             while len(answer) < length:
                 n = random.randint(0, 9)
                 if str(n) not in answer:
@@ -125,7 +148,9 @@ class GameService:
             result.message = f'Все символы строки должны быть разными!'
         if word_type == GameType.WORDS:
             r = re.compile("[а-яА-Я]+")
-            list_q = [question, ]
+            list_q = [
+                question,
+            ]
             lines = [w for w in filter(r.match, list_q)]
             if not len(lines) == 0:
                 result.message = f'Все символы должны быть буквами кириллицы!'
