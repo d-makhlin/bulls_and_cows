@@ -2,14 +2,18 @@ version: '3'
 
 services:
 
-  mongo:
-    image: mongo:latest
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-
   bot:
     build: .
+    command: python -u main.py
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
     restart: unless-stopped
     links:
-      - mongo
+      - pymongo
+
+  pymongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
