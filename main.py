@@ -1,5 +1,7 @@
+import codecs
 import logging
 import telebot
+import json
 
 from pymongo import MongoClient
 from src.game_service import GameService
@@ -15,6 +17,7 @@ telebot.apihelper.proxy = {'http': 'http://88.204.154.155:8080'}
 #   'http', 'socks5://login:pass@12.11.22.33:8000',
 #   'https', 'socks5://login:pass@12.11.22.33:8000'
 # }
+
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
@@ -59,4 +62,8 @@ def send_text(message):
 db = MongoClient()[MONGODB_NAME]
 logging.info('Connected to db')
 
-bot.polling()
+file = codecs.open('../static/dictionary.txt', 'r+', encoding='utf-8')
+words_dict = json.load(file)
+
+if __name__ == '__main__':
+    bot.polling()
