@@ -1,3 +1,4 @@
+import re
 from typing import Optional, List
 import random
 from src.datamodels import GameStatisticsResponse, GameActionResponse, Game, GameRoundActionResponse
@@ -93,13 +94,16 @@ class GameService:
     @classmethod
     def _generate_word(cls, word_type: GameType, length: int) -> str:
         answer = ''
-        while len(answer) < length:
-            if word_type == GameType.WORDS:
-                raise NotImplementedError  # todo: connect to dictionary
-            else:
+        if word_type == GameType.NUMBERS:
+            while len(answer) < length:
                 n = random.randint(0, 9)
                 if str(n) not in answer:
                     answer = answer + str(n)
+        else:
+            from main import words_dict
+            words = words_dict[str(length)]
+            index = random.randint(0, len(words))
+            answer = words[index]
         return answer
 
     @classmethod
@@ -112,8 +116,11 @@ class GameService:
         if len(question) != len(set_question):
             result.message = f'Все символы строки должны быть разными!'
         if word_type == GameType.WORDS:
-            if not question.isalpha():
-                result.message = f'Все символы должны быть буквами!'
+            r = re.compile("[а-яА-Я]+")
+            list_q = [question, ]
+            lines = [w for w in filter(r.match, list_q)]
+            if not len(lines) == 0:
+                result.message = f'Все символы должны быть буквами кириллицы!'
         else:
             if not question.isnumeric():
                 result.message = f'Все символы должны быть цифрами!'
