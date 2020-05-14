@@ -3,13 +3,11 @@ from typing import Optional
 from pydantic import BaseModel
 from datetime import datetime
 
-from static.constants import GameType, GameState
-
 
 class Game(BaseModel):
     chat_id: str
-    state: GameState
-    word_type: Optional[GameType] = None
+    state: str
+    word_type: Optional[str] = None
     answer: Optional[str] = None
     length: Optional[int]
     rounds: int
