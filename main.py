@@ -1,5 +1,4 @@
 import logging
-
 import telebot
 
 from pymongo import MongoClient
@@ -8,8 +7,14 @@ from static.constants import GameType, GameState
 from static.messages import HELLO_MESSAGE, RULES_MESSAGE, GAME_TYPE_MESSAGE, GAME_LENGTH_MESSAGE, GAME_START_MESSAGE
 from static.settings import BOT_TOKEN, MONGODB_NAME
 
+# telebot.apihelper.proxy = {'https': 'socks5h://userproxy:password@proxy_address:port'}
 bot = telebot.TeleBot(BOT_TOKEN)
+telebot.apihelper.proxy = {'http': 'http://88.204.154.155:8080'}
 
+# telebot.apihelper.proxy = {
+#   'http', 'socks5://login:pass@12.11.22.33:8000',
+#   'https', 'socks5://login:pass@12.11.22.33:8000'
+# }
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
@@ -53,4 +58,5 @@ def send_text(message):
 
 db = MongoClient()[MONGODB_NAME]
 logging.info('Connected to db')
+
 bot.polling()
