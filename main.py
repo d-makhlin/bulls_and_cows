@@ -62,7 +62,7 @@ def send_text(message):
     elif text in ['4', '5', '6']:
         GameService.set_word_length(chat_id, text)
         game = GameService.check_if_game_exists(chat_id, [GameState.IN_PROGRESS])[1]
-        word_type = 'слово' if game.word_type == str(GameType.WORDS) else 'число'
+        word_type = 'слово' if game.word_type == str(GameType.WORDS.value) else 'число'
         bot.send_message(chat_id, GAME_START_MESSAGE.format(word_type, game.length))
 
     else:

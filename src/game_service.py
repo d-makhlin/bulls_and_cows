@@ -92,7 +92,10 @@ class GameService:
             response.success = False
             response.message = 'Не существует текущей игры!'
         else:
-            cls._check_if_question_is_ok(text, game.word_type, game.length)
+            response_action = cls._check_if_question_is_ok(text, game.word_type, game.length)
+            if not response_action.success:
+                response.message = response_action.message
+                return response
             response.bulls, response.cows = cls._get_bulls_and_cows(text, game.answer)
             if response.bulls == game.length:
                 response.message = f'Поздравляю, ты выиграл! Я загадывал {game.answer}'
@@ -141,18 +144,19 @@ class GameService:
     def _check_if_question_is_ok(cls, question: str, word_type: GameType, length: int) -> GameActionResponse:
         result = GameActionResponse(success=False)
         set_question = set(question)
+        length = int(length)
 
         if len(question) != length:
             result.message = f'Строка должна иметь длину {length}!'
         if len(question) != len(set_question):
             result.message = f'Все символы строки должны быть разными!'
-        if word_type == GameType.WORDS:
+        if word_type == GameType.WORDS.value:
             r = re.compile("[а-яА-Я]+")
             list_q = [
                 question,
             ]
             lines = [w for w in filter(r.match, list_q)]
-            if not len(lines) == 0:
+            if len(lines) == 0:
                 result.message = f'Все символы должны быть буквами кириллицы!'
         else:
             if not question.isnumeric():
