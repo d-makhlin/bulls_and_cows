@@ -11,7 +11,12 @@ telebot.apihelper.proxy = {'http': 'http://159.89.82.38:3128', 'https': 'https:/
 
 
 @bot.message_handler(commands=['start'])
-def start_message(message):
+def start_message(message) -> None:
+    """
+    Returns initial bunch of buttons when users starts playing
+    :param message: user telegram message object
+    :return
+    """
     start_button = telebot.types.KeyboardButton('Новая игра')
     rules_button = telebot.types.KeyboardButton('Правила')
     statistics_button = telebot.types.KeyboardButton('Статистика')
@@ -21,7 +26,12 @@ def start_message(message):
 
 
 @bot.message_handler(content_types=['text'])
-def send_text(message):
+def send_text(message) -> None:
+    """
+    Processes user's message depending on it's text and handles gaming process
+    :param message:
+    :return: user telegram message object
+    """
     text = message.text.lower()
     chat_id = message.chat.id
 

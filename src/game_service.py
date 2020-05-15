@@ -13,6 +13,9 @@ from static.settings import MONGODB_NAME
 
 
 class GameService:
+    """
+    Service that implements all gaming actions, works with database and builds response messages for user
+    """
 
     con = MongoClient()[MONGODB_NAME]
     db = con['bulls_and_cows']
@@ -23,6 +26,12 @@ class GameService:
 
     @classmethod
     def get_statistics(cls, chat_id) -> GameStatisticsResponse:
+        """
+        Returns users's statistics about how many games has he/she played and
+         how much average time does it take from him/her to win a single game
+        :param chat_id: id of user's chat
+        :return: dataclass that has information about users's statistics
+        """
         games_query = GameService.db.find({'chat_id': str(chat_id), 'state': str(GameState.FINISHED.value)})
         rounds = 0
         time = 0.0
@@ -38,6 +47,11 @@ class GameService:
 
     @classmethod
     def start_game(cls, chat_id) -> GameActionResponse:
+        """
+        Starts the game for user when he has chosen every necessary game parameter
+        :param chat_id: id of user's chat
+        :return: dataclass that has information whether the game was started or not and why
+        """
         response = GameActionResponse(success=True)
         if not cls.check_if_game_exists(chat_id, [GameState.IN_PROGRESS, GameState.INITIALIZATION])[0]:
             game = Game(chat_id=chat_id, state=str(GameState.INITIALIZATION.value), rounds=0, start_date=datetime.now())
@@ -53,6 +67,12 @@ class GameService:
 
     @classmethod
     def set_word_type(cls, chat_id, text) -> GameActionResponse:
+        """
+        Sets the word type of the game (playing with numbers or letters)
+        :param chat_id: id of user's chat
+        :param text: type of game that was chosen by user
+        :return: dataclass that has information whether the action was successful or not and why
+        """
         response = GameActionResponse(success=True)
         if text == 'числа':
             word_type = GameType.NUMBERS
@@ -71,6 +91,12 @@ class GameService:
 
     @classmethod
     def set_word_length(cls, chat_id, length) -> GameActionResponse:
+        """
+        Sets the length of the word that the user wants to play with
+        :param chat_id: id of users' chat
+        :param length: Length that was chosen by user
+        :return: dataclass that has information whether the action was successful or not and why
+        """
         response = GameActionResponse(success=True)
         exists, game = cls.check_if_game_exists(chat_id, [GameState.INITIALIZATION])
         if not exists:
@@ -85,6 +111,12 @@ class GameService:
 
     @classmethod
     def play_round(cls, chat_id, text) -> GameRoundActionResponse:
+        """
+        Implements one round of play with user's guess and program's answer with results by bulls and cows
+        :param chat_id: id of user's chat
+        :param text: user's guess
+        :return: dataclass that has information whether the action was successful or not and why
+        """
         response = GameRoundActionResponse(success=True)
         exists, game = cls.check_if_game_exists(chat_id, [GameState.IN_PROGRESS])
         if not exists:
@@ -118,6 +150,12 @@ class GameService:
 
     @classmethod
     def check_if_game_exists(cls, chat_id, states: List[GameState]) -> (bool, Optional[Game]):
+        """
+        Method for internal usage that checks if the user has a game in any given state in database
+        :param chat_id: id of user's chat
+        :param states: list of game states that have to be checked
+        :return: Tuple, 1. does the game exist or not. 2. the game if it does exist
+        """
         str_states = [str(state.value) for state in states]
         game = GameService.db.find_one({'chat_id': str(chat_id), 'state': {'$in': str_states}})
         if game:
@@ -126,6 +164,11 @@ class GameService:
 
     @classmethod
     def generate_word(cls, word_type: GameType, length: int) -> str:
+        """
+        Generates an answer of given length for the game
+        :param length: given length
+        :return: generated answer
+        """
         length = int(length)
         if word_type == GameType.NUMBERS.value:
             answer = cls.generate_numbers_word(length)
@@ -135,12 +178,22 @@ class GameService:
 
     @classmethod
     def generate_letters_word(cls, length: int) -> str:
+        """
+        Generates an answer of letters of given length for the game
+        :param length: given length
+        :return: generated answer
+        """
         words = GameService.words_dict[str(length)]
         index = random.randint(0, len(words))
         return words[index]
 
     @classmethod
     def generate_numbers_word(cls, length: int) -> str:
+        """
+        Generates an answer of numbers of given length for the game
+        :param length: given length
+        :return: generated answer
+        """
         answer = ''
         while len(answer) < length:
             number = random.randint(0, 9)
@@ -150,6 +203,13 @@ class GameService:
 
     @classmethod
     def check_if_question_is_ok(cls, question: str, word_type: GameType, length: int) -> GameActionResponse:
+        """
+        Checks if the user's guess is relevant for the game
+        :param question: user's guess
+        :param word_type: type of game (letters or numbers)
+        :param length: already set length of answer
+        :return: dataclass that has information whether the action was successful or not and why
+        """
         result = GameActionResponse(success=False)
         set_question = set(question)
         length = int(length)
@@ -170,6 +230,11 @@ class GameService:
 
     @classmethod
     def check_if_letter_question_is_ok(cls, question: str) -> bool:
+        """
+        Checks if the string with letters is relevant for the game
+        :param question: user's guess
+        :return: True if question is relevant, False otherwise
+        """
         russian = re.compile("[а-яА-Я]+")
         list_q = [
             question,
@@ -179,6 +244,12 @@ class GameService:
 
     @classmethod
     def get_bulls_and_cows(cls, question: str, answer: str) -> (int, int):
+        """
+        Returns numbers of bulls and cows based on given question and actual answer
+        :param question: user's guess
+        :param answer: correct answer
+        :return: numbers of bulls and cows
+        """
         bulls, cows = 0, 0
         for ind in range(len(question)):
             if question[ind] == answer[ind]:
