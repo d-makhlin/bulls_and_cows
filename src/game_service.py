@@ -76,7 +76,7 @@ class GameService:
         if not exists:
             response.update(False, 'Не существует текущей игры!')
         else:
-            answer = cls._generate_word(game.word_type, length)
+            answer = cls.generate_word(game.word_type, length)
             GameService.db.update_one(
                 {'chat_id': str(chat_id), 'state': str(GameState.INITIALIZATION.value)},
                 {'$set': {'length': length, 'state': str(GameState.IN_PROGRESS.value), 'answer': answer}},
@@ -91,11 +91,11 @@ class GameService:
             response.success = False
             response.message = 'Не существует текущей игры!'
         else:
-            response_action = cls._check_if_question_is_ok(text, game.word_type, game.length)
+            response_action = cls.check_if_question_is_ok(text, game.word_type, game.length)
             if not response_action.success:
                 response.message = response_action.message
                 return response
-            response.bulls, response.cows = cls._get_bulls_and_cows(text, game.answer)
+            response.bulls, response.cows = cls.get_bulls_and_cows(text, game.answer)
             if response.bulls == game.length:
                 response.message = f'Поздравляю, ты выиграл! Я загадывал {game.answer}'
                 GameService.db.update_one(
@@ -125,22 +125,31 @@ class GameService:
         return False, None
 
     @classmethod
-    def _generate_word(cls, word_type: GameType, length: int) -> str:
-        answer = ''
+    def generate_word(cls, word_type: GameType, length: int) -> str:
         length = int(length)
         if word_type == GameType.NUMBERS.value:
-            while len(answer) < length:
-                number = random.randint(0, 9)
-                if str(number) not in answer:
-                    answer = answer + str(number)
+            answer = cls.generate_numbers_word(length)
         else:
-            words = GameService.words_dict[str(length)]
-            index = random.randint(0, len(words))
-            answer = words[index]
+            answer = cls.generate_letters_word(length)
         return answer
 
     @classmethod
-    def _check_if_question_is_ok(cls, question: str, word_type: GameType, length: int) -> GameActionResponse:
+    def generate_letters_word(cls, length: int) -> str:
+        words = GameService.words_dict[str(length)]
+        index = random.randint(0, len(words))
+        return words[index]
+
+    @classmethod
+    def generate_numbers_word(cls, length: int) -> str:
+        answer = ''
+        while len(answer) < length:
+            number = random.randint(0, 9)
+            if str(number) not in answer:
+                answer = answer + str(number)
+        return answer
+
+    @classmethod
+    def check_if_question_is_ok(cls, question: str, word_type: GameType, length: int) -> GameActionResponse:
         result = GameActionResponse(success=False)
         set_question = set(question)
         length = int(length)
@@ -150,12 +159,7 @@ class GameService:
         if len(question) != len(set_question):
             result.message = 'Все символы строки должны быть разными!'
         if word_type == GameType.WORDS.value:
-            russian = re.compile("[а-яА-Я]+")
-            list_q = [
-                question,
-            ]
-            lines = [w for w in filter(russian.match, list_q)]
-            if len(lines) == 0:
+            if not cls.check_if_letter_question_is_ok(question):
                 result.message = 'Все символы должны быть буквами кириллицы!'
         else:
             if not question.isnumeric():
@@ -165,7 +169,16 @@ class GameService:
         return result
 
     @classmethod
-    def _get_bulls_and_cows(cls, question: str, answer: str) -> (int, int):
+    def check_if_letter_question_is_ok(cls, question: str) -> bool:
+        russian = re.compile("[а-яА-Я]+")
+        list_q = [
+            question,
+        ]
+        lines = [w for w in filter(russian.match, list_q)]
+        return len(lines) != 0
+
+    @classmethod
+    def get_bulls_and_cows(cls, question: str, answer: str) -> (int, int):
         bulls, cows = 0, 0
         for ind in range(len(question)):
             if question[ind] == answer[ind]:

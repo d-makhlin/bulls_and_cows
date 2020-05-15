@@ -25,6 +25,7 @@ def send_text(message):
     text = message.text.lower()
     chat_id = message.chat.id
 
+
     if text == 'правила':
         button = telebot.types.KeyboardButton('Новая игра')
         play_keyboard = telebot.types.ReplyKeyboardMarkup()
