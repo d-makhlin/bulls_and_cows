@@ -1,15 +1,14 @@
-import re
 import codecs
-import logging
 import json
+import logging
+import random
+import re
+from datetime import datetime
+from typing import List, Optional
 
 from pymongo import MongoClient
-from typing import Optional, List
-import random
-from src.datamodels import GameStatisticsResponse, GameActionResponse, Game, GameRoundActionResponse
-from static.constants import GameType, GameState
-from datetime import datetime
-
+from src.datamodels import Game, GameActionResponse, GameRoundActionResponse, GameStatisticsResponse
+from static.constants import GameState, GameType
 from static.settings import MONGODB_NAME
 
 
@@ -59,7 +58,7 @@ class GameService:
             word_type = GameType.NUMBERS
         else:
             word_type = GameType.WORDS
-        exists, game = cls.check_if_game_exists(chat_id, [GameState.INITIALIZATION])
+        exists, _ = cls.check_if_game_exists(chat_id, [GameState.INITIALIZATION])
         if not exists:
             response.success = False
             response.message = 'Не существует текущей игры!'
@@ -131,9 +130,9 @@ class GameService:
         length = int(length)
         if word_type == GameType.NUMBERS.value:
             while len(answer) < length:
-                n = random.randint(0, 9)
-                if str(n) not in answer:
-                    answer = answer + str(n)
+                number = random.randint(0, 9)
+                if str(number) not in answer:
+                    answer = answer + str(number)
         else:
             words = GameService.words_dict[str(length)]
             index = random.randint(0, len(words))
@@ -149,18 +148,18 @@ class GameService:
         if len(question) != length:
             result.message = f'Строка должна иметь длину {length}!'
         if len(question) != len(set_question):
-            result.message = f'Все символы строки должны быть разными!'
+            result.message = 'Все символы строки должны быть разными!'
         if word_type == GameType.WORDS.value:
-            r = re.compile("[а-яА-Я]+")
+            russian = re.compile("[а-яА-Я]+")
             list_q = [
                 question,
             ]
-            lines = [w for w in filter(r.match, list_q)]
+            lines = [w for w in filter(russian.match, list_q)]
             if len(lines) == 0:
-                result.message = f'Все символы должны быть буквами кириллицы!'
+                result.message = 'Все символы должны быть буквами кириллицы!'
         else:
             if not question.isnumeric():
-                result.message = f'Все символы должны быть цифрами!'
+                result.message = 'Все символы должны быть цифрами!'
         if not result.message:
             result.success = True
         return result

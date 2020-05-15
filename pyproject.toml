@@ -1,0 +1,8 @@
+[tool.isort]
+default_section = 'THIRDPARTY'
+known_application_apps = ['core']
+sections = ['FUTURE', 'STDLIB', 'THIRDPARTY', 'APPLICATION_APPS', 'LOCALFOLDER']
+line_length = 120
+use_parentheses = true
+include_trailing_comma = true
+multi_line_output = 3
