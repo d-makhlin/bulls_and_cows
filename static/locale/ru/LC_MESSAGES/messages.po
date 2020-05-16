@@ -1,0 +1,69 @@
+msgid ""
+msgstr ""
+
+"Content-Type: text/plain; charset=UTF-8\n"
+
+#: messages.py:6
+msgid "Hi, this bot is designed to play \"Bulls and Cows\""
+msgstr "Привет, этот бот предназначен для игры в \"Быки и Коровы\""
+
+#: messages.py:7
+msgid ""
+"Bulls and cows is a logical game, during which, in several attempts, the "
+"player must determine what the bot has planned. Variants of the game may "
+"depend on the type of predictable sequence - it can be numbers or words. "
+"After each attempt, the bot puts a \"rating\", indicating the number of "
+"guesses without coincidence with their positions (the number of \"cows\") "
+"and complete matches (the number of \"bulls\"). The guesser must analyze the "
+"attempts made and the estimates obtained. The bot only compares the next "
+"option with the plan and puts a mark on formal rules."
+msgstr "Быки и коровы — логическая игра, в ходе которой за несколько попыток игрок должен определить, "
+                " что задумал бот. Варианты игры могут зависеть от типа отгадываемой последовательности — это "
+                "могут быть числа или слова. После каждой попытки бот выставляет \"оценку\", указывая количество "
+                "угаданного без совпадения с их позициями (количество \"коров\") и полных совпадений (количество"
+                " \"быков\"). Угадывающий должен анализировать сделанные попытки и полученные оценки. "
+                "Бот лишь сравнивает очередной вариант с задуманным и выставляет оценку по формальным правилам."
+
+#: messages.py:14
+msgid "Choose the type of string to make"
+msgstr "Выбери тип строки для загадывания"
+
+#: messages.py:15
+msgid "Choose the length of the string to be guessed"
+msgstr "Выбери длину загадываемой строки"
+
+#: messages.py:16
+msgid "I made up the {} of length {}, start guessing!"
+msgstr "Я загадал {} длины {}, отгадывай!"
+
+#: messages.py:20
+msgid "New game"
+msgstr "Новая игра"
+
+#: messages.py:21
+msgid "Rules"
+msgstr "Правила"
+
+#: messages.py:22
+msgid "Statistics"
+msgstr "Статистика"
+
+#: messages.py:23
+msgid "{} games were played, average time: {} seconds"
+msgstr "Сыграно {} игр, среднее время: {} секунд"
+
+#: messages.py:24
+msgid "number"
+msgstr "число"
+
+#: messages.py:25
+msgid "Numbers"
+msgstr "Числа"
+
+#: messages.py:26
+msgid "word"
+msgstr "слово"
+
+#: messages.py:27
+msgid "Words"
+msgstr "Слова"
