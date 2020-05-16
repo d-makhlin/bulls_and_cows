@@ -16,4 +16,4 @@
 - выполните `docker-compose up --build -d pymongo`
 - выполните `python ./main.py`
 
-Бот будет доступен как **@bulls_and_cows_game_bot**
+Бот будет доступен как **@bulls_and_cows_cmc_bot**
