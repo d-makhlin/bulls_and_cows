@@ -9,4 +9,11 @@
 
 
 В данной версии реализована игра с числами и словами русского языка.
-## @bulls_and_cows_game_bot
+
+## Установка
+- склонируйте проект с github
+- в корне проекта выполните `pip install -r requirements.txt`
+- выполните `docker-compose up --build -d pymongo`
+- выполните `python ./main.py`
+
+Бот будет доступен как **@bulls_and_cows_game_bot**
